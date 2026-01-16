@@ -15,13 +15,31 @@
         .container { padding: 15px; display: none; }
         .container.active { display: block; }
         
-        /* 商品頁面輸入框樣式 */
-        .input-group-grid { background: var(--card); padding: 15px; border-radius: 20px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .jpy-row { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f2f2f7; padding-bottom: 4px; }
-        .jpy-row span { color: var(--gray); font-weight: bold; width: 22px; font-size: 13px; }
-        .jpy-input-item { flex: 1; border: none; font-size: 16px; font-weight: bold; padding: 4px; outline: none; text-align: right; background: none; }
+        /* 商品報價輸入框樣式 - 已修正置中問題 */
+        .input-group-grid { 
+            background: var(--card); 
+            padding: 20px 15px; 
+            border-radius: 20px; 
+            margin-bottom: 20px; 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; /* 兩列等寬 */
+            column-gap: 20px; /* 增加兩列中間的間距 */
+            row-gap: 12px;
+            justify-items: center; /* 讓內容水平置中 */
+        }
+        .jpy-row { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            border-bottom: 1px solid #f2f2f7; 
+            padding-bottom: 4px;
+            width: 100%; /* 讓底線填滿該格 */
+            max-width: 140px; /* 限制單個輸入格最大寬度，避免拉得太開 */
+        }
+        .jpy-row span { color: var(--gray); font-weight: bold; width: 22px; font-size: 13px; text-align: center; }
+        .jpy-input-item { flex: 1; border: none; font-size: 16px; font-weight: bold; padding: 4px; outline: none; text-align: right; background: none; width: 60px; }
 
-        /* 相卡頁面 */
+        /* 相卡報價樣式 */
         .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .photo-card { background: var(--card); padding: 12px; border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .card-name { font-weight: 800; font-size: 14px; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -31,19 +49,17 @@
         .btn-step { background: #f0f0f5; border: none; color: var(--blue); font-size: 20px; width: 28px; height: 28px; border-radius: 14px; font-weight: bold; }
         .count-input { width: 35px; text-align: center; border: none; background: #f2f2f7; border-radius: 6px; padding: 5px 0; font-weight: bold; font-size: 15px; }
         
-        /* 預覽區 */
+        /* 報價單預覽區 */
         .report-box { background: #fff; border-radius: 20px; padding: 15px; margin-top: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .report-textarea { width: 100%; height: 250px; background: #f8f8f8; border: 1px solid #eee; border-radius: 10px; padding: 10px; box-sizing: border-box; font-family: monospace; font-size: 14px; margin-bottom: 10px; }
         
-        /* 設定頁面 (加大輸入框) */
+        /* 系統設定樣式 */
         .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .card-edit-box { background: var(--card); padding: 10px; border-radius: 12px; border: 1px solid #e5e5ea; }
         .full-input { width: 100%; border: none; border-bottom: 1px solid #eee; padding: 5px 0; margin-bottom: 8px; font-weight: bold; font-size: 12px; outline: none; }
         .settings-group { background: var(--card); border-radius: 12px; padding: 15px; margin-bottom: 20px; }
         .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f2f2f7; }
         .settings-input-wrapper { display: flex; align-items: center; gap: 4px; }
-        
-        /* 將相卡參數格子稍微拉寬以容納四位數 */
         .settings-input { border: 1.5px solid #d1d1d6; border-radius: 6px; padding: 4px; width: 48px; text-align: right; font-size: 14px; outline: none; }
         
         .btn-main { background: var(--blue); color: #fff; border: none; width: 100%; padding: 16px; border-radius: 14px; font-weight: bold; font-size: 17px; margin-top: 10px; }
@@ -74,7 +90,7 @@
     </div>
 
     <div id="tab1" class="container">
-        <h2 style="font-size: 18px;">📦 商品報價</h2>
+        <h2 style="font-size: 18px; margin-bottom: 15px;">📦 商品報價</h2>
         <div class="input-group-grid" id="jpy-inputs-container">
             </div>
         <div id="product-results"></div>
@@ -99,6 +115,7 @@
     </nav>
 
     <script>
+        // 核心邏輯保持 V14 版本
         const defaultCards = [
             {name: "Lawson/全家--L判", jpy: 30, twd: 15, twd25: 14, twd50: 13.5, count: 0},
             {name: "7-11--L判", jpy: 40, twd: 18, twd25: 17, twd50: 16.5, count: 0},
@@ -151,8 +168,8 @@
                     <div class="price-row" style="font-size:11px;">
                         <div style="display:flex; justify-content:space-between; margin-bottom:3px;">日幣: <input type="number" class="settings-input" value="${c.jpy}" onchange="settings.cards[${i}].jpy=parseFloat(this.value);saveData()"></div>
                         <div style="display:flex; justify-content:space-between; margin-bottom:3px;">單張: <input type="number" class="settings-input" value="${c.twd}" onchange="settings.cards[${i}].twd=parseFloat(this.value);saveData()"></div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:3px; color:var(--orange)">25+: <input type="number" class="settings-input" value="${c.twd25}" onchange="settings.cards[${i}].twd25=parseFloat(this.value);saveData()"></div>
-                        <div style="display:flex; justify-content:space-between; color:var(--orange)">50+: <input type="number" class="settings-input" value="${c.twd50}" onchange="settings.cards[${i}].twd50=parseFloat(this.value);saveData()"></div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:3px; color:var(--orange)">25+: <input type="number" class="settings-input" value="${c.twd25}" onchange="settings.cards[${i}].get25=parseFloat(this.value);saveData()"></div>
+                        <div style="display:flex; justify-content:space-between; color:var(--orange)">50+: <input type="number" class="settings-input" value="${c.twd50}" onchange="settings.cards[${i}].get50=parseFloat(this.value);saveData()"></div>
                     </div>
                 </div>`).join('');
         }
@@ -165,19 +182,18 @@
         function generatePhotoReport() {
             const actives = settings.cards.filter(c => c.count > 0);
             if(actives.length === 0) return;
-            let totalTwd = 0, totalJpy = 0, hasDiscount = false;
+            let totalTwd = 0, totalJpy = 0;
             let text = "📸 相卡報價\n------------------\n";
             actives.forEach(c => {
                 let p = c.twd;
-                if (c.count >= 50 && c.twd50 > 0) { p = c.twd50; hasDiscount = true; }
-                else if (c.count >= 25 && c.twd25 > 0) { p = c.twd25; hasDiscount = true; }
+                if (c.count >= 50 && c.twd50 > 0) p = c.twd50;
+                else if (c.count >= 25 && c.twd25 > 0) p = c.twd25;
                 let sub = p * c.count;
                 text += `▫️ ${c.name}\n   ${p}元 × ${c.count}張 = $${sub}\n`;
                 totalTwd += sub; totalJpy += (c.jpy * c.count);
             });
             const finalTwd = Math.ceil(totalTwd / 5) * 5;
             const profit = Math.floor(finalTwd - (totalJpy * settings.realRate));
-            if(hasDiscount) text += `(優惠已自動計算)\n`;
             text += `------------------\n總計金額：NT$ ${finalTwd}\n(不含國際運費&台灣運費)`;
             document.getElementById('photo-report-text').value = text;
             document.getElementById('photo-profit-val').innerText = "預估利潤：NT$ " + profit;
