@@ -7,41 +7,33 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="910豬式">
-    <link rel="apple-touch-icon" href="https://via.placeholder.com/192/007AFF/FFFFFF?text=910">
     
     <style>
         :root { --bg: #f8f9fa; --card: #ffffff; --blue: #007aff; --gray: #8e8e93; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); margin: 0; padding-bottom: 100px; -webkit-tap-highlight-color: transparent; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); margin: 0; padding-bottom: 100px; -webkit-tap-highlight-color: transparent; }
         .header { text-align: center; padding: 20px 0; font-size: 24px; font-weight: 900; background: var(--card); }
         .tabs { display: flex; justify-content: space-around; position: fixed; bottom: 0; width: 100%; background: var(--card); padding: 15px 0 35px; border-top: 1px solid #ddd; z-index: 100; }
-        .tab-item { text-align: center; color: var(--gray); font-size: 12px; cursor: pointer; flex: 1; }
+        .tab-item { text-align: center; color: var(--gray); font-size: 12px; flex: 1; }
         .tab-item.active { color: var(--blue); }
         .tab-icon { font-size: 20px; display: block; margin-bottom: 4px; }
-        
         .container { padding: 15px; display: none; }
         .container.active { display: block; }
-        
-        /* 相卡樣式 */
         .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .photo-card { background: var(--card); padding: 12px; border-radius: 18px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .card-name { font-weight: 800; font-size: 16px; margin-bottom: 8px; white-space: nowrap; overflow: hidden; }
+        .card-name { font-weight: 800; font-size: 16px; margin-bottom: 8px; }
         .card-controls { display: flex; align-items: center; justify-content: space-between; }
-        .price-tag { color: var(--blue); font-weight: bold; }
+        .price-tag { color: var(--blue); font-weight: bold; font-size: 14px; }
         .stepper { display: flex; align-items: center; gap: 5px; }
-        .btn-step { background: none; border: none; color: var(--blue); font-size: 24px; cursor: pointer; padding: 0; }
-        .btn-step.minus { color: var(--gray); }
-        .count-input { width: 45px; text-align: center; border: none; background: #f0f0f0; border-radius: 5px; padding: 4px 0; font-weight: bold; font-size: 16px; }
-
-        /* 設定頁樣式 */
+        .btn-step { background: none; border: none; color: var(--blue); font-size: 24px; padding: 0; }
+        .count-input { width: 45px; text-align: center; border: none; background: #f0f0f0; border-radius: 5px; padding: 4px 0; font-weight: bold; }
         .settings-item { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .settings-input { border: 1px solid #ddd; border-radius: 5px; padding: 8px; width: 80px; text-align: right; }
-        .card-edit-box { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 10px; }
-        .full-input { width: 100%; border: 1px solid #ddd; padding: 8px; border-radius: 5px; margin-bottom: 8px; font-weight: bold; box-sizing: border-box; }
-
-        /* 報價結果 */
+        .settings-input { border: 1px solid #ddd; border-radius: 5px; padding: 6px; width: 60px; text-align: right; }
+        .card-edit-box { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+        .full-input { width: 100%; border: 1px solid #ddd; padding: 8px; border-radius: 5px; margin-bottom: 10px; font-weight: bold; box-sizing: border-box; }
+        .price-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; font-size: 12px; }
         #report-box { background: #fff; border-radius: 20px; padding: 15px; margin-top: 20px; }
-        #report-text { width: 100%; height: 150px; background: #f0f0f0; border: none; border-radius: 10px; padding: 10px; box-sizing: border-box; font-family: monospace; }
-        .btn-main { background: var(--blue); color: #white; border: none; width: 100%; padding: 15px; border-radius: 15px; font-weight: bold; color: #fff; font-size: 18px; margin-top: 15px; }
+        #report-text { width: 100%; height: 180px; background: #f0f0f0; border: none; border-radius: 10px; padding: 10px; box-sizing: border-box; font-family: monospace; }
+        .btn-main { background: var(--blue); color: #fff; border: none; width: 100%; padding: 15px; border-radius: 15px; font-weight: bold; font-size: 18px; margin-top: 15px; }
         .profit-text { text-align: center; font-weight: bold; color: #28a745; margin: 10px 0; }
     </style>
 </head>
@@ -49,7 +41,7 @@
     <div class="header">910豬式会社</div>
 
     <div id="tab0" class="container active">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <h2 style="margin:0">📸 相卡報價</h2>
             <button onclick="resetCounts()" style="color:var(--gray); border:none; background:none;">重置張數</button>
         </div>
@@ -75,7 +67,7 @@
         <h2>⚙️ 系統設定</h2>
         <div id="settings-fields"></div>
         <hr>
-        <h3>相卡名稱與價格定義</h3>
+        <h3>相卡階梯報價設定</h3>
         <div id="card-settings-list"></div>
     </div>
 
@@ -86,72 +78,61 @@
     </div>
 
     <script>
-        // 初始化資料
-        let settings = JSON.parse(localStorage.getItem('910Settings')) || {
+        let settings = JSON.parse(localStorage.getItem('910SettingsV6')) || {
             realRate: 0.20, pubRate: 0.22, pct1: 17.5, pct2: 15, pct3: 20,
-            cards: [
-                { name: "Lawson L判", jpy: 30, twd: 15, count: 0 },
-                { name: "Lawson 2L判", jpy: 80, twd: 25, count: 0 },
-                { name: "7-11 L判", jpy: 40, twd: 18, count: 0 },
-                { name: "7-11 2L判", jpy: 100, twd: 33, count: 0 },
-                { name: "相卡 E", jpy: 0, twd: 0, count: 0 },
-                { name: "相卡 F", jpy: 0, twd: 0, count: 0 },
-                { name: "相卡 G", jpy: 0, twd: 0, count: 0 },
-                { name: "相卡 H", jpy: 0, twd: 0, count: 0 },
-                { name: "相卡 I", jpy: 0, twd: 0, count: 0 },
-                { name: "相卡 J", jpy: 0, twd: 0, count: 0 },
-                { name: "相卡 K", jpy: 0, twd: 0, count: 0 },
-                { name: "相卡 L", jpy: 0, twd: 0, count: 0 }
-            ]
+            cards: Array.from({length: 12}, (_, i) => ({
+                name: i < 4 ? ["Lawson L判", "Lawson 2L判", "7-11 L判", "7-11 2L判"][i] : `相卡 ${String.fromCharCode(69+i-4)}`,
+                jpy: 0, twd: 0, twd25: 0, twd50: 0, count: 0
+            }))
         };
 
-        function saveData() { localStorage.setItem('910Settings', JSON.stringify(settings)); renderAll(); }
+        function saveData() { localStorage.setItem('910SettingsV6', JSON.stringify(settings)); renderAll(); }
 
         function renderAll() {
-            // 渲染相卡報價頁
             const list = document.getElementById('photo-card-list');
-            list.innerHTML = settings.cards.map((c, i) => `
+            list.innerHTML = settings.cards.map((c, i) => {
+                let currentPrice = c.twd;
+                if (c.count >= 50 && c.twd50 > 0) currentPrice = c.twd50;
+                else if (c.count >= 25 && c.twd25 > 0) currentPrice = c.twd25;
+                
+                return `
                 <div class="photo-card">
                     <div class="card-name">${c.name}</div>
                     <div class="card-controls">
-                        <span class="price-tag">$${c.twd}</span>
+                        <span class="price-tag">$${currentPrice}${c.count>=25?'🔥':''}</span>
                         <div class="stepper">
-                            <button class="btn-step minus" onclick="updateCount(${i},-1)">⊖</button>
+                            <button class="btn-step" onclick="updateCount(${i},-1)">⊖</button>
                             <input type="number" class="count-input" value="${c.count}" onchange="setCount(${i}, this.value)">
                             <button class="btn-step" onclick="updateCount(${i},1)">⊕</button>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
 
-            // 渲染設定頁 - 匯率
             const sFields = document.getElementById('settings-fields');
             sFields.innerHTML = `
                 <div class="settings-item"><span>成本匯率</span><input class="settings-input" type="number" step="0.01" value="${settings.realRate}" onchange="settings.realRate=this.value;saveData()"></div>
                 <div class="settings-item"><span>報價匯率</span><input class="settings-input" type="number" step="0.01" value="${settings.pubRate}" onchange="settings.pubRate=this.value;saveData()"></div>
-                <div class="settings-item"><span>二手利潤%</span><input class="settings-input" type="number" value="${settings.pct1}" onchange="settings.pct1=this.value;saveData()"></div>
-                <div class="settings-item"><span>通販利潤%</span><input class="settings-input" type="number" value="${settings.pct2}" onchange="settings.pct2=this.value;saveData()"></div>
-                <div class="settings-item"><span>現地利潤%</span><input class="settings-input" type="number" value="${settings.pct3}" onchange="settings.pct3=this.value;saveData()"></div>
             `;
 
-            // 渲染設定頁 - 相卡編輯
             const cEdit = document.getElementById('card-settings-list');
             cEdit.innerHTML = settings.cards.map((c, i) => `
                 <div class="card-edit-box">
                     <input class="full-input" value="${c.name}" onchange="settings.cards[${i}].name=this.value;saveData()">
-                    <div style="display:flex; gap:10px; font-size:12px">
-                        成本(日): <input type="number" class="settings-input" value="${c.jpy}" onchange="settings.cards[${i}].jpy=this.value;saveData()">
-                        報價(台): <input type="number" class="settings-input" value="${c.twd}" onchange="settings.cards[${i}].twd=this.value;saveData()">
+                    <div class="price-row">
+                        <span>日幣成本: <input type="number" class="settings-input" value="${c.jpy}" onchange="settings.cards[${i}].jpy=this.value;saveData()"></span>
+                        <span>原價(台): <input type="number" class="settings-input" value="${c.twd}" onchange="settings.cards[${i}].twd=this.value;saveData()"></span>
                     </div>
-                </div>
-            `).join('');
+                    <div class="price-row" style="color: #ff9500;">
+                        <span>25+張報價: <input type="number" class="settings-input" value="${c.twd25}" onchange="settings.cards[${i}].twd25=this.value;saveData()"></span>
+                        <span>50+張報價: <input type="number" class="settings-input" value="${c.twd50}" onchange="settings.cards[${i}].twd50=this.value;saveData()"></span>
+                    </div>
+                </div>`).join('');
         }
 
-        // 邏輯函數
         function updateCount(i, delta) { settings.cards[i].count = Math.max(0, settings.cards[i].count + delta); saveData(); }
         function setCount(i, val) { settings.cards[i].count = Math.max(0, parseInt(val) || 0); saveData(); }
         function resetCounts() { settings.cards.forEach(c => c.count = 0); document.getElementById('report-box').style.display='none'; saveData(); }
-
         function showTab(idx) {
             document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
@@ -163,16 +144,19 @@
             const actives = settings.cards.filter(c => c.count > 0);
             if(actives.length === 0) return;
             let totalTwd = 0, totalJpy = 0;
-            let text = "相卡報價如下\n------------------\n";
+            let text = "📸 相卡報價單\n------------------\n";
             actives.forEach(c => {
-                let sub = c.twd * c.count;
-                text += `▫️ ${c.name} × ${c.count} = $${sub}\n`;
+                let p = c.twd;
+                if (c.count >= 50 && c.twd50 > 0) p = c.twd50;
+                else if (c.count >= 25 && c.twd25 > 0) p = c.twd25;
+                let sub = p * c.count;
+                text += `▫️ ${c.name}\n   ${p}元 × ${c.count}張 = $${sub}\n`;
                 totalTwd += sub;
                 totalJpy += (c.jpy * c.count);
             });
             const finalTwd = Math.ceil(totalTwd / 5) * 5;
             const profit = Math.floor(finalTwd - (totalJpy * settings.realRate));
-            text += `------------------\n總計金額：NT$ ${finalTwd}\n(此金額不含運費)`;
+            text += `------------------\n總計金額：NT$ ${finalTwd}\n(優惠已自動計算)`;
             document.getElementById('report-text').value = text;
             document.getElementById('card-profit').innerText = "預估利潤：+" + profit;
             document.getElementById('report-box').style.display = 'block';
@@ -180,32 +164,24 @@
 
         function calcProduct() {
             const jpy = parseFloat(document.getElementById('jpy-input').value) || 0;
-            const types = [
-                {t:"二手商品", p:settings.pct1},
-                {t:"通販代購", p:settings.pct2},
-                {t:"現地代購", p:settings.pct3}
+            const rates = [
+                {t:"二手商品", p:settings.pct1}, {t:"通販代購", p:settings.pct2}, {t:"現地代購", p:settings.pct3}
             ];
-            document.getElementById('product-results').innerHTML = types.map(type => {
-                const twd = Math.ceil((jpy * settings.pubRate * (1 + type.p/100)) / 5) * 5;
+            document.getElementById('product-results').innerHTML = rates.map(r => {
+                const twd = Math.ceil((jpy * settings.pubRate * (1 + r.p/100)) / 5) * 5;
                 const profit = Math.floor(twd - (jpy * settings.realRate));
-                return `
-                    <div style="background:#fff; padding:15px; border-radius:20px; margin-bottom:10px; display:flex; justify-content:space-between">
-                        <div><div style="font-size:12px; color:var(--gray)">${type.t}</div><div style="font-size:24px; font-weight:900">NT$ ${twd}</div></div>
-                        <div style="text-align:right"><div style="font-size:12px; color:var(--gray)">粗利</div><div style="color:#28a745; font-weight:bold">+${profit}</div></div>
-                    </div>
-                `;
+                return `<div class="settings-item"><div>${r.t}<br><b>NT$ ${twd}</b></div><div style="color:green">利+${profit}</div></div>`;
             }).join('');
         }
 
         function copyReport() {
             const el = document.getElementById('report-text');
-            el.select();
+            el.select(); el.setSelectionRange(0, 99999);
             document.execCommand('copy');
-            alert('已複製到剪貼簿！');
+            alert('報價單已複製！');
         }
 
-        function hideKeyboard(e) { if(e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') document.activeElement.blur(); }
-
+        function hideKeyboard(e) { if(!['INPUT','TEXTAREA'].includes(e.target.tagName)) document.activeElement.blur(); }
         renderAll();
     </script>
 </body>
