@@ -22,17 +22,19 @@
         .stepper { display: flex; align-items: center; gap: 4px; }
         .btn-step { background: #f0f0f5; border: none; color: var(--blue); font-size: 20px; width: 28px; height: 28px; border-radius: 14px; font-weight: bold; }
         .count-input { width: 40px; text-align: center; border: none; background: #f2f2f7; border-radius: 6px; padding: 5px 0; font-weight: bold; font-size: 16px; }
+        
+        /* 報價單預覽區樣式 */
+        .report-box { background: #fff; border-radius: 20px; padding: 15px; margin-top: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .report-textarea { width: 100%; height: 160px; background: #f8f8f8; border: 1px solid #eee; border-radius: 10px; padding: 10px; box-sizing: border-box; font-family: monospace; font-size: 14px; margin-bottom: 10px; }
+        
         .settings-group { background: var(--card); border-radius: 12px; padding: 15px; margin-bottom: 20px; }
         .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f2f2f7; }
         .settings-input { border: 1.5px solid #d1d1d6; border-radius: 8px; padding: 8px; width: 75px; text-align: right; font-size: 16px; }
-        .card-edit-box { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #e5e5ea; }
-        .full-input { width: 100%; border: 1.5px solid #d1d1d6; padding: 10px; border-radius: 8px; margin-bottom: 12px; font-weight: bold; font-size: 16px; box-sizing: border-box; }
-        .price-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; }
-        #report-box { background: #fff; border-radius: 20px; padding: 15px; margin-top: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        #report-text { width: 100%; height: 180px; background: #f8f8f8; border: 1px solid #eee; border-radius: 10px; padding: 10px; box-sizing: border-box; font-family: monospace; font-size: 14px; }
-        .btn-main { background: var(--blue); color: #fff; border: none; width: 100%; padding: 16px; border-radius: 14px; font-weight: bold; font-size: 17px; margin-top: 15px; }
-        .profit-text { text-align: center; font-weight: bold; color: #34c759; margin: 12px 0; font-size: 18px; }
-        .copy-arrow { background: var(--blue); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        
+        .btn-main { background: var(--blue); color: #fff; border: none; width: 100%; padding: 16px; border-radius: 14px; font-weight: bold; font-size: 17px; margin-top: 10px; }
+        .profit-text { text-align: center; font-weight: bold; color: #34c759; margin: 10px 0; font-size: 17px; }
+        .copy-arrow { background: var(--blue); color: white; border: none; border-radius: 50%; width: 34px; height: 34px; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+
         .tabs { display: flex; justify-content: space-around; position: fixed; bottom: 0; width: 100%; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); padding: 12px 0 34px; border-top: 1px solid #d1d1d6; z-index: 100; }
         .tab-item { text-align: center; color: var(--gray); font-size: 11px; flex: 1; text-decoration: none; }
         .tab-item.active { color: var(--blue); }
@@ -48,11 +50,12 @@
             <button onclick="resetCounts()" style="color:var(--gray); border:none; background:none;">重置張數</button>
         </div>
         <div class="card-grid" id="photo-card-list"></div>
-        <button class="btn-main" onclick="generateReport()">🔍 生成報價單</button>
-        <div id="report-box" style="display:none">
-            <textarea id="report-text" readonly></textarea>
-            <div id="card-profit" class="profit-text"></div>
-            <button class="btn-main" style="background:#000" onclick="copyReportText()">複製報價文字</button>
+        <button class="btn-main" onclick="generatePhotoReport()">🔍 生成報價單</button>
+        
+        <div id="photo-report-area" class="report-box" style="display:none">
+            <textarea id="photo-report-text" class="report-textarea" readonly></textarea>
+            <div id="photo-profit-val" class="profit-text"></div>
+            <button class="btn-main" style="background:#000" onclick="copyText('photo-report-text')">複製報價文字</button>
         </div>
     </div>
 
@@ -63,6 +66,12 @@
             <input type="number" id="jpy-input" style="font-size:48px; width:100%; border:none; outline:none; text-align:center; font-weight:bold;" placeholder="0" oninput="calcProduct()">
         </div>
         <div id="product-results"></div>
+
+        <div id="product-report-area" class="report-box" style="display:none">
+            <textarea id="product-report-text" class="report-textarea" readonly></textarea>
+            <div id="product-profit-val" class="profit-text"></div>
+            <button class="btn-main" style="background:#000" onclick="copyText('product-report-text')">複製報價文字</button>
+        </div>
     </div>
 
     <div id="tab2" class="container">
@@ -79,22 +88,15 @@
     </nav>
 
     <script>
-        function initData() {
-            let data = JSON.parse(localStorage.getItem('910Settings_V8'));
-            if (!data) {
-                data = {
-                    realRate: 0.20, pubRate: 0.22, pct1: 17.5, pct2: 15, pct3: 20,
-                    cards: Array.from({length: 12}, (_, i) => ({
-                        name: i < 4 ? ["Lawson L判", "Lawson 2L判", "7-11 L判", "7-11 2L判"][i] : `相卡 ${String.fromCharCode(69+i-4)}`,
-                        jpy: 0, twd: 0, twd25: 0, twd50: 0, count: 0
-                    }))
-                };
-            }
-            return data;
-        }
+        let settings = JSON.parse(localStorage.getItem('910Settings_V9')) || {
+            realRate: 0.20, pubRate: 0.22, pct1: 17.5, pct2: 15, pct3: 20,
+            cards: Array.from({length: 12}, (_, i) => ({
+                name: i < 4 ? ["Lawson L判", "Lawson 2L判", "7-11 L判", "7-11 2L判"][i] : `相卡 ${String.fromCharCode(69+i-4)}`,
+                jpy: 0, twd: 0, twd25: 0, twd50: 0, count: 0
+            }))
+        };
 
-        let settings = initData();
-        function saveData() { localStorage.setItem('910Settings_V8', JSON.stringify(settings)); renderAll(); }
+        function saveData() { localStorage.setItem('910Settings_V9', JSON.stringify(settings)); renderAll(); }
 
         function renderAll() {
             const list = document.getElementById('photo-card-list');
@@ -108,21 +110,22 @@
             document.getElementById('settings-fields').innerHTML = `
                 <div class="settings-item"><span>成本匯率</span><input class="settings-input" type="number" step="0.001" value="${settings.realRate}" onchange="settings.realRate=parseFloat(this.value);saveData()"></div>
                 <div class="settings-item"><span>報價匯率</span><input class="settings-input" type="number" step="0.001" value="${settings.pubRate}" onchange="settings.pubRate=parseFloat(this.value);saveData()"></div>
-                <div class="settings-item"><span>二手利潤%</span><input class="settings-input" type="number" value="${settings.pct1}" onchange="settings.pct1=parseFloat(this.value);saveData()"></div>
-                <div class="settings-item"><span>通販利潤%</span><input class="settings-input" type="number" value="${settings.pct2}" onchange="settings.pct2=parseFloat(this.value);saveData()"></div>
-                <div class="settings-item"><span>現地利潤%</span><input class="settings-input" type="number" value="${settings.pct3}" onchange="settings.pct3=parseFloat(this.value);saveData()"></div>
+                <div class="settings-item"><span>二手%</span><input class="settings-input" type="number" value="${settings.pct1}" onchange="settings.pct1=parseFloat(this.value);saveData()"></div>
+                <div class="settings-item"><span>通販%</span><input class="settings-input" type="number" value="${settings.pct2}" onchange="settings.pct2=parseFloat(this.value);saveData()"></div>
+                <div class="settings-item"><span>現地%</span><input class="settings-input" type="number" value="${settings.pct3}" onchange="settings.pct3=parseFloat(this.value);saveData()"></div>
             `;
 
             document.getElementById('card-settings-list').innerHTML = settings.cards.map((c, i) => `
-                <div class="card-edit-box"><input class="full-input" value="${c.name}" onchange="settings.cards[${i}].name=this.value;saveData()"><div class="price-row"><span>成本(日): <input type="number" class="settings-input" value="${c.jpy}" onchange="settings.cards[${i}].jpy=parseFloat(this.value);saveData()"></span><span>單價: <input type="number" class="settings-input" value="${c.twd}" onchange="settings.cards[${i}].twd=parseInt(this.value);saveData()"></span></div><div class="price-row" style="color:var(--orange)"><span>25+價: <input type="number" class="settings-input" value="${c.twd25}" onchange="settings.cards[${i}].twd25=parseInt(this.value);saveData()"></span><span>50+價: <input type="number" class="settings-input" value="${c.twd50}" onchange="settings.cards[${i}].twd50=parseInt(this.value);saveData()"></span></div></div>`).join('');
+                <div class="card-edit-box"><input class="full-input" style="border:none; border-bottom:1px solid #ddd; border-radius:0" value="${c.name}" onchange="settings.cards[${i}].name=this.value;saveData()"><div class="price-row" style="margin-top:10px"><span>日幣: <input type="number" class="settings-input" value="${c.jpy}" onchange="settings.cards[${i}].jpy=parseFloat(this.value);saveData()"></span><span>單價: <input type="number" class="settings-input" value="${c.twd}" onchange="settings.cards[${i}].twd=parseInt(this.value);saveData()"></span></div><div class="price-row" style="color:var(--orange)"><span>25+: <input type="number" class="settings-input" value="${c.twd25}" onchange="settings.cards[${i}].twd25=parseInt(this.value);saveData()"></span><span>50+: <input type="number" class="settings-input" value="${c.twd50}" onchange="settings.cards[${i}].twd50=parseInt(this.value);saveData()"></span></div></div>`).join('');
         }
 
         function updateCount(i, delta) { settings.cards[i].count = Math.max(0, settings.cards[i].count + delta); saveData(); }
-        function setCount(i, v) { settings.cards[i].count = Math.max(0, parseInt(v) || 0); localStorage.setItem('910Settings_V8', JSON.stringify(settings)); }
-        function resetCounts() { settings.cards.forEach(c => c.count = 0); document.getElementById('report-box').style.display='none'; saveData(); }
+        function setCount(i, v) { settings.cards[i].count = Math.max(0, parseInt(v) || 0); localStorage.setItem('910Settings_V9', JSON.stringify(settings)); }
+        function resetCounts() { settings.cards.forEach(c => c.count = 0); document.getElementById('photo-report-area').style.display='none'; saveData(); }
         function showTab(idx) { document.querySelectorAll('.container').forEach(c => c.classList.remove('active')); document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active')); document.getElementById('tab'+idx).classList.add('active'); document.querySelectorAll('.tab-item')[idx].classList.add('active'); }
 
-        function generateReport() {
+        // 相卡生成
+        function generatePhotoReport() {
             const actives = settings.cards.filter(c => c.count > 0);
             if(actives.length === 0) return;
             let totalTwd = 0, totalJpy = 0, hasDiscount = false;
@@ -138,14 +141,17 @@
             });
             const finalTwd = Math.ceil(totalTwd / 5) * 5;
             const profit = Math.floor(finalTwd - (totalJpy * settings.realRate));
+            
+            if(hasDiscount) text += `(優惠已自動計算)\n`;
             text += `------------------\n總計金額：NT$ ${finalTwd}\n(報價金額不含國際運費&台灣運費)`;
-            if(hasDiscount) text += `\n(優惠已自動計算)`;
-            document.getElementById('report-text').value = text;
-            document.getElementById('card-profit').innerText = "預估利潤：NT$ " + profit;
-            document.getElementById('report-box').style.display = 'block';
+            
+            document.getElementById('photo-report-text').value = text;
+            document.getElementById('photo-profit-val').innerText = "預估利潤：NT$ " + profit;
+            document.getElementById('photo-report-area').style.display = 'block';
             window.scrollTo(0, document.body.scrollHeight);
         }
 
+        // 商品計算
         function calcProduct() {
             const jpy = parseFloat(document.getElementById('jpy-input').value) || 0;
             const types = [{t:"二手商品", p:settings.pct1}, {t:"通販代購", p:settings.pct2}, {t:"現地代購", p:settings.pct3}];
@@ -153,20 +159,25 @@
                 const twd = Math.ceil((jpy * settings.pubRate * (1 + r.p/100)) / 5) * 5;
                 const profit = Math.floor(twd - (jpy * settings.realRate));
                 const copyStr = `📦商品報價\n------------------\n商品報價(${twd}元)\n------------------\n(此報價不含國際運費&台灣運費)`;
-                return `<div class="settings-group" style="display:flex; justify-content:space-between; align-items:center;"><div><span style="font-size:12px; color:gray;">${r.t}</span><br><b style="font-size:22px;">$${twd}</b></div><div style="display:flex; align-items:center; gap:10px;"><div style="text-align:right;"><span style="font-size:12px; color:gray;">利潤</span><br><b style="color:#34c759;">+${profit}</b></div><button class="copy-arrow" onclick="copyDirect('${copyStr}')">➔</button></div></div>`;
+                return `<div class="settings-group" style="display:flex; justify-content:space-between; align-items:center;"><div><span style="font-size:12px; color:gray;">${r.t}</span><br><b style="font-size:22px;">$${twd}</b></div><div style="display:flex; align-items:center; gap:10px;"><div style="text-align:right;"><span style="font-size:12px; color:gray;">利潤</span><br><b style="color:#34c759;">+${profit}</b></div><button class="copy-arrow" onclick="triggerProductReport('${copyStr}', ${profit})">➔</button></div></div>`;
             }).join('');
         }
 
-        function copyDirect(str) {
+        function triggerProductReport(str, profit) {
+            document.getElementById('product-report-text').value = str;
+            document.getElementById('product-profit-val').innerText = "預估利潤：NT$ " + profit;
+            document.getElementById('product-report-area').style.display = 'block';
+            // 同時執行複製
             const el = document.createElement('textarea');
             el.value = str; document.body.appendChild(el); el.select();
             document.execCommand('copy'); document.body.removeChild(el);
-            alert('已複製報價格式！');
+            window.scrollTo(0, document.body.scrollHeight);
         }
 
-        function copyReportText() {
-            const el = document.getElementById('report-text');
-            el.select(); document.execCommand('copy');
+        function copyText(id) {
+            const el = document.getElementById(id);
+            el.select(); el.setSelectionRange(0, 99999);
+            document.execCommand('copy');
             alert('報價單已複製！');
         }
 
