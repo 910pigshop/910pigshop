@@ -17,24 +17,12 @@
         
         /* 商品報價輸入框樣式 - 已修正置中問題 */
         .input-group-grid { 
-            background: var(--card); 
-            padding: 20px 15px; 
-            border-radius: 20px; 
-            margin-bottom: 20px; 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; /* 兩列等寬 */
-            column-gap: 20px; /* 增加兩列中間的間距 */
-            row-gap: 12px;
-            justify-items: center; /* 讓內容水平置中 */
+            background: var(--card); padding: 20px 15px; border-radius: 20px; margin-bottom: 20px; 
+            display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; row-gap: 12px; justify-items: center; 
         }
         .jpy-row { 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-            border-bottom: 1px solid #f2f2f7; 
-            padding-bottom: 4px;
-            width: 100%; /* 讓底線填滿該格 */
-            max-width: 140px; /* 限制單個輸入格最大寬度，避免拉得太開 */
+            display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f2f2f7; padding-bottom: 4px; 
+            width: 100%; max-width: 140px; 
         }
         .jpy-row span { color: var(--gray); font-weight: bold; width: 22px; font-size: 13px; text-align: center; }
         .jpy-input-item { flex: 1; border: none; font-size: 16px; font-weight: bold; padding: 4px; outline: none; text-align: right; background: none; width: 60px; }
@@ -81,7 +69,7 @@
             <button onclick="resetCounts()" style="color:var(--gray); border:none; background:none; font-size:14px;">重置張數</button>
         </div>
         <div class="card-grid" id="photo-card-list"></div>
-        <button class="btn-main" onclick="generatePhotoReport()">🔍 生成報價單</button>
+        <button class="btn-main" onclick="generatePhotoReport()">🔍 生成報價</button>
         <div id="photo-report-area" class="report-box" style="display:none">
             <textarea id="photo-report-text" class="report-textarea" readonly></textarea>
             <div id="photo-profit-val" class="profit-text"></div>
@@ -91,8 +79,7 @@
 
     <div id="tab1" class="container">
         <h2 style="font-size: 18px; margin-bottom: 15px;">📦 商品報價</h2>
-        <div class="input-group-grid" id="jpy-inputs-container">
-            </div>
+        <div class="input-group-grid" id="jpy-inputs-container"></div>
         <div id="product-results"></div>
         <div id="product-report-area" class="report-box" style="display:none">
             <textarea id="product-report-text" class="report-textarea" readonly></textarea>
@@ -115,7 +102,6 @@
     </nav>
 
     <script>
-        // 核心邏輯保持 V14 版本
         const defaultCards = [
             {name: "Lawson/全家--L判", jpy: 30, twd: 15, twd25: 14, twd50: 13.5, count: 0},
             {name: "7-11--L判", jpy: 40, twd: 18, twd25: 17, twd50: 16.5, count: 0},
@@ -168,14 +154,14 @@
                     <div class="price-row" style="font-size:11px;">
                         <div style="display:flex; justify-content:space-between; margin-bottom:3px;">日幣: <input type="number" class="settings-input" value="${c.jpy}" onchange="settings.cards[${i}].jpy=parseFloat(this.value);saveData()"></div>
                         <div style="display:flex; justify-content:space-between; margin-bottom:3px;">單張: <input type="number" class="settings-input" value="${c.twd}" onchange="settings.cards[${i}].twd=parseFloat(this.value);saveData()"></div>
-                        <div style="display:flex; justify-content:space-between; margin-bottom:3px; color:var(--orange)">25+: <input type="number" class="settings-input" value="${c.twd25}" onchange="settings.cards[${i}].get25=parseFloat(this.value);saveData()"></div>
-                        <div style="display:flex; justify-content:space-between; color:var(--orange)">50+: <input type="number" class="settings-input" value="${c.twd50}" onchange="settings.cards[${i}].get50=parseFloat(this.value);saveData()"></div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:3px; color:var(--orange)">25+: <input type="number" class="settings-input" value="${c.twd25}" onchange="settings.cards[${i}].twd25=parseFloat(this.value);saveData()"></div>
+                        <div style="display:flex; justify-content:space-between; color:var(--orange)">50+: <input type="number" class="settings-input" value="${c.twd50}" onchange="settings.cards[${i}].twd50=parseFloat(this.value);saveData()"></div>
                     </div>
                 </div>`).join('');
         }
 
         function updateCount(i, delta) { settings.cards[i].count = Math.max(0, settings.cards[i].count + delta); saveData(); }
-        function setCount(i, v) { settings.cards[i].count = Math.max(0, parseInt(v) || 0); localStorage.setItem('910Settings_V14', JSON.stringify(settings)); }
+        function setCount(i, v) { settings.cards[i].count = Math.max(0, parseInt(v) || 0); localStorage.setItem('910Settings_V14', JSON.stringify(settings)); renderAll(); }
         function resetCounts() { settings.cards.forEach(c => c.count = 0); document.getElementById('photo-report-area').style.display='none'; saveData(); }
         function showTab(idx) { document.querySelectorAll('.container').forEach(c => c.classList.remove('active')); document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active')); document.getElementById('tab'+idx).classList.add('active'); document.querySelectorAll('.tab-item')[idx].classList.add('active'); }
 
@@ -231,10 +217,6 @@
             document.getElementById('product-report-text').value = str;
             document.getElementById('product-profit-val').innerText = "預估總利潤：NT$ " + profit;
             document.getElementById('product-report-area').style.display = 'block';
-            const el = document.createElement('textarea');
-            el.value = str; document.body.appendChild(el); el.select();
-            document.execCommand('copy'); document.body.removeChild(el);
-            alert('報價單已複製！');
             window.scrollTo(0, document.body.scrollHeight);
         }
 
