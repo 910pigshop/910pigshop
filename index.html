@@ -133,9 +133,7 @@
                     jContainer.innerHTML += `<div class="jpy-row"><span>${i}.</span><input type="number" class="jpy-input-item jpy-field" placeholder="0" oninput="calcProduct()"></div>`;
                 }
             }
-
             updateCardListDisplay();
-
             document.getElementById('settings-fields').innerHTML = `
                 <div class="settings-item"><span>成本匯率</span><input class="settings-input" type="number" step="0.001" value="${settings.realRate}" onchange="settings.realRate=parseFloat(this.value);saveData()"></div>
                 <div class="settings-item"><span>公告匯率</span><input class="settings-input" type="number" step="0.001" value="${settings.pubRate}" onchange="settings.pubRate=parseFloat(this.value);saveData()"></div>
@@ -143,7 +141,6 @@
                 <div class="settings-item"><span>網路通販利潤</span><div class="settings-input-wrapper"><input class="settings-input" type="number" value="${settings.pct2}" onchange="settings.pct2=parseFloat(this.value);saveData()">%</div></div>
                 <div class="settings-item"><span>現地代購利潤</span><div class="settings-input-wrapper"><input class="settings-input" type="number" value="${settings.pct3}" onchange="settings.pct3=parseFloat(this.value);saveData()">%</div></div>
             `;
-
             document.getElementById('card-settings-list').innerHTML = settings.cards.map((c, i) => `
                 <div class="card-edit-box">
                     <input class="full-input" value="${c.name}" onchange="settings.cards[${i}].name=this.value;saveData()">
@@ -156,7 +153,6 @@
                 </div>`).join('');
         }
 
-        // 獨立出的更新列表函數，避免重新渲染導致鍵盤消失
         function updateCardListDisplay() {
             const totalCount = settings.cards.reduce((sum, c) => sum + (parseInt(c.count) || 0), 0);
             const list = document.getElementById('photo-card-list');
@@ -175,8 +171,6 @@
 
         function setCount(i, v) { 
             settings.cards[i].count = Math.max(0, parseInt(v) || 0); 
-            // 這裡不呼叫 renderAll() 也不呼叫 updateCardListDisplay()，只存資料
-            // 這樣鍵盤就不會消失，直到點擊旁邊或按按鈕
             localStorage.setItem('910Settings_V14', JSON.stringify(settings)); 
         }
         
@@ -198,7 +192,7 @@
             document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active')); 
             document.getElementById('tab'+idx).classList.add('active'); 
             document.querySelectorAll('.tab-item')[idx].classList.add('active'); 
-            if(idx === 0) updateCardListDisplay(); // 切換回相卡時刷新一次列表
+            if(idx === 0) updateCardListDisplay(); 
         }
 
         function generatePhotoReport() {
@@ -211,7 +205,10 @@
                 let p = c.twd;
                 if (totalCount >= 50 && c.twd50 > 0) p = c.twd50;
                 else if (totalCount >= 25 && c.twd25 > 0) p = c.twd25;
-                let sub = p * c.count;
+                
+                // 修正：單項小數點無條件進位到整數
+                let sub = Math.ceil(p * c.count);
+                
                 text += `▫️ ${c.name}\n   ${p}元 × ${c.count}張 = $${sub}\n`;
                 totalTwd += sub; totalJpy += (c.jpy * c.count);
             });
@@ -223,7 +220,7 @@
             document.getElementById('photo-profit-val').innerText = "預估利潤：NT$ " + profit;
             document.getElementById('photo-report-area').style.display = 'block';
             window.scrollTo(0, document.body.scrollHeight);
-            updateCardListDisplay(); // 生成報價時順便刷新列表顯示正確數字
+            updateCardListDisplay();
         }
 
         function calcProduct() {
@@ -269,7 +266,7 @@
         function hideKeyboard(e) { 
             if(!['INPUT','TEXTAREA'].includes(e.target.tagName)) { 
                 document.activeElement.blur(); 
-                updateCardListDisplay(); // 點擊空白處隱藏鍵盤時，刷新一次顯示
+                updateCardListDisplay(); 
             } 
         }
         renderAll();
