@@ -15,6 +15,7 @@
         .container { padding: 15px; display: none; }
         .container.active { display: block; }
         
+        /* 商品報價樣式 */
         .input-group-grid { 
             background: var(--card); padding: 20px 15px; border-radius: 20px; margin-bottom: 20px; 
             display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; row-gap: 12px; justify-items: center; 
@@ -26,6 +27,7 @@
         .jpy-row span { color: var(--gray); font-weight: bold; width: 22px; font-size: 13px; text-align: center; }
         .jpy-input-item { flex: 1; border: none; font-size: 16px; font-weight: bold; padding: 4px; outline: none; text-align: right; background: none; width: 60px; }
 
+        /* 相卡報價樣式 */
         .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .photo-card { background: var(--card); padding: 12px; border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .card-name { font-weight: 800; font-size: 14px; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -35,9 +37,11 @@
         .btn-step { background: #f0f0f5; border: none; color: var(--blue); font-size: 20px; width: 28px; height: 28px; border-radius: 14px; font-weight: bold; }
         .count-input { width: 35px; text-align: center; border: none; background: #f2f2f7; border-radius: 6px; padding: 5px 0; font-weight: bold; font-size: 15px; }
         
+        /* 報價單樣式 */
         .report-box { background: #fff; border-radius: 20px; padding: 15px; margin-top: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .report-textarea { width: 100%; height: 250px; background: #f8f8f8; border: 1px solid #eee; border-radius: 10px; padding: 10px; box-sizing: border-box; font-family: monospace; font-size: 14px; margin-bottom: 10px; }
         
+        /* 設定頁面樣式 */
         .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .card-edit-box { background: var(--card); padding: 10px; border-radius: 12px; border: 1px solid #e5e5ea; }
         .full-input { width: 100%; border: none; border-bottom: 1px solid #eee; padding: 5px 0; margin-bottom: 8px; font-weight: bold; font-size: 12px; outline: none; }
@@ -50,8 +54,9 @@
         .btn-gen-small { background: var(--blue); color: #fff; border: none; padding: 8px 12px; border-radius: 10px; font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 4px; }
         .profit-text { text-align: center; font-weight: bold; color: #34c759; margin: 10px 0; font-size: 17px; }
 
+        /* 分頁欄 */
         .tabs { display: flex; justify-content: space-around; position: fixed; bottom: 0; width: 100%; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); padding: 12px 0 34px; border-top: 1px solid #d1d1d6; z-index: 100; }
-        .tab-item { text-align: center; color: var(--gray); font-size: 11px; flex: 1; text-decoration: none; }
+        .tab-item { text-align: center; color: var(--gray); font-size: 11px; flex: 1; text-decoration: none; cursor: pointer; }
         .tab-item.active { color: var(--blue); }
         .tab-icon { font-size: 22px; display: block; margin-bottom: 4px; }
     </style>
@@ -116,13 +121,13 @@
             {name: "官方相卡/貼紙(¥500)", jpy: 500, twd: 150, twd25: 142, twd50: 138, count: 0}
         ];
 
-        let settings = JSON.parse(localStorage.getItem('910Settings_V14')) || {
+        let settings = JSON.parse(localStorage.getItem('910Settings_V15')) || {
             realRate: 0.20, pubRate: 0.22, pct1: 17.5, pct2: 15, pct3: 20,
             cards: defaultCards
         };
 
         function saveData(shouldRender = true) { 
-            localStorage.setItem('910Settings_V14', JSON.stringify(settings)); 
+            localStorage.setItem('910Settings_V15', JSON.stringify(settings)); 
             if(shouldRender) renderAll(); 
         }
 
@@ -171,7 +176,7 @@
 
         function setCount(i, v) { 
             settings.cards[i].count = Math.max(0, parseInt(v) || 0); 
-            localStorage.setItem('910Settings_V14', JSON.stringify(settings)); 
+            localStorage.setItem('910Settings_V15', JSON.stringify(settings)); 
         }
         
         function resetCounts() { 
@@ -201,18 +206,23 @@
             const totalCount = actives.reduce((sum, c) => sum + c.count, 0);
             let totalTwd = 0, totalJpy = 0;
             let text = `📸 相卡報價 (總計 ${totalCount} 張)\n------------------\n`;
+            
             actives.forEach(c => {
                 let p = c.twd;
                 if (totalCount >= 50 && c.twd50 > 0) p = c.twd50;
                 else if (totalCount >= 25 && c.twd25 > 0) p = c.twd25;
                 
-                // 修正：單項小數點無條件進位到整數
+                // 子項目金額：進位至個位數
                 let sub = Math.ceil(p * c.count);
                 
                 text += `▫️ ${c.name}\n   ${p}元 × ${c.count}張 = $${sub}\n`;
                 totalTwd += sub; totalJpy += (c.jpy * c.count);
             });
-            const finalTwd = Math.ceil(totalTwd / 5) * 5;
+
+            // 最終總計：確保整數後，進位至 5 的倍數
+            let finalTwd = Math.ceil(totalTwd);
+            finalTwd = Math.ceil(finalTwd / 5) * 5;
+
             const profit = Math.floor(finalTwd - (totalJpy * settings.realRate));
             text += `------------------\n總計金額：NT$ ${finalTwd}\n(不含國際運費&台灣運費)\n\n💡再幫我確認張數跟金額是否都正確\n內容正確請再直接完成匯款 謝謝`;
             
