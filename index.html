@@ -31,9 +31,19 @@
         .card-name { font-weight: 800; font-size: 14px; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card-controls { display: flex; align-items: center; justify-content: space-between; }
         .price-tag { color: var(--blue); font-weight: bold; font-size: 14px; }
-        .stepper { display: flex; align-items: center; gap: 4px; }
-        .btn-step { background: #f0f0f5; border: none; color: var(--blue); font-size: 20px; width: 28px; height: 28px; border-radius: 14px; font-weight: bold; }
-        .count-input { width: 35px; text-align: center; border: none; background: #f2f2f7; border-radius: 6px; padding: 5px 0; font-weight: bold; font-size: 15px; }
+        
+        /* 調整步進器按鈕與輸入框寬度 */
+        .stepper { display: flex; align-items: center; gap: 2px; background: #f2f2f7; border-radius: 8px; padding: 2px; }
+        .btn-step { 
+            background: none; border: none; color: var(--blue); font-size: 18px; 
+            width: 24px; height: 28px; border-radius: 6px; font-weight: 900; 
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-step:active { background: #e5e5ea; }
+        .count-input { 
+            width: 40px; text-align: center; border: none; background: none; 
+            font-weight: bold; font-size: 15px; outline: none; padding: 0;
+        }
         
         .report-box { background: #fff; border-radius: 20px; padding: 15px; margin-top: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .report-textarea { width: 100%; height: 250px; background: #f8f8f8; border: 1px solid #eee; border-radius: 10px; padding: 10px; box-sizing: border-box; font-family: monospace; font-size: 14px; margin-bottom: 10px; }
@@ -116,13 +126,13 @@
             {name: "官方相卡/貼紙(¥500)", jpy: 500, twd: 150, twd25: 142, twd50: 138, count: 0}
         ];
 
-        let settings = JSON.parse(localStorage.getItem('910Settings_V16')) || {
+        let settings = JSON.parse(localStorage.getItem('910Settings_V17')) || {
             realRate: 0.20, pubRate: 0.22, pct1: 17.5, pct2: 15, pct3: 20,
             cards: defaultCards
         };
 
         function saveData(shouldRender = true) { 
-            localStorage.setItem('910Settings_V16', JSON.stringify(settings)); 
+            localStorage.setItem('910Settings_V17', JSON.stringify(settings)); 
             if(shouldRender) renderAll(); 
         }
 
@@ -171,7 +181,7 @@
 
         function setCount(i, v) { 
             settings.cards[i].count = Math.max(0, parseInt(v) || 0); 
-            localStorage.setItem('910Settings_V16', JSON.stringify(settings)); 
+            localStorage.setItem('910Settings_V17', JSON.stringify(settings)); 
         }
         
         function resetCounts() { 
@@ -207,15 +217,14 @@
                 if (totalCount >= 50 && c.twd50 > 0) p = c.twd50;
                 else if (totalCount >= 25 && c.twd25 > 0) p = c.twd25;
                 
-                // 明細區：顯示實際數字，不進行進位
+                // 明細顯示實際計算結果
                 let sub = p * c.count;
                 
                 text += `▫️ ${c.name}\n   ${p}元 × ${c.count}張 = $${sub}\n`;
-                totalTwd += sub; 
-                totalJpy += (c.jpy * c.count);
+                totalTwd += sub; totalJpy += (c.jpy * c.count);
             });
 
-            // 總計金額：針對最後的結果進行 1 進位到整數
+            // 總計進位邏輯：只要有小數點就無條件進 1 到整數
             const finalTwd = Math.ceil(totalTwd);
 
             const profit = Math.floor(finalTwd - (totalJpy * settings.realRate));
